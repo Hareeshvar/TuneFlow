@@ -31,3 +31,19 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# React
+frontend/node_modules/
+frontend/dist/
+
+# Uploads
+uploads/
+
+# Logs
+*.log
+
+# Environment
+.env
+
+# Java
+*.class
