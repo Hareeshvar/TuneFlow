@@ -1,7 +1,11 @@
 package com.spotify.My_music.controller;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,10 +26,10 @@ public class UploadController {
     }
 
     @PostMapping(
-    value = "/upload",
-    consumes = "multipart/form-data"
-)
-    public Song uploadSong(
+        value = "/upload",
+        consumes = "multipart/form-data"
+    )
+    public ResponseEntity<Song> uploadSong(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "cover", required = false) MultipartFile cover,
             @RequestParam("title") String title,
@@ -53,7 +57,7 @@ public class UploadController {
 
         String filePath = songsDir + file.getOriginalFilename();
         System.out.println("Saving song to: " + filePath);
-        file.transferTo(new File(filePath));
+        Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
 
         Song song = new Song();
         song.setTitle(title);
@@ -64,10 +68,11 @@ public class UploadController {
         if (cover != null && !cover.isEmpty()) {
             String coverPath = coversDir + cover.getOriginalFilename();
             System.out.println("Saving cover to: " + coverPath);
-            cover.transferTo(new File(coverPath));
+            Files.copy(cover.getInputStream(), Paths.get(coverPath), StandardCopyOption.REPLACE_EXISTING);
             song.setCoverImage(coverPath);
         }
 
-        return songRepository.save(song);
+        Song savedSong = songRepository.save(song);
+        return ResponseEntity.ok(savedSong);
     }
 }
