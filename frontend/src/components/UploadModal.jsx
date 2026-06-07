@@ -20,11 +20,11 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
       setFile(selectedFile);
       setError('');
       setLoadingMetadata(true);
-      
+
       // Extract audio duration
       const objectUrl = URL.createObjectURL(selectedFile);
       const tempAudio = new Audio(objectUrl);
-      
+
       tempAudio.addEventListener('loadedmetadata', () => {
         const durationSecs = tempAudio.duration;
         if (!isNaN(durationSecs)) {
@@ -74,7 +74,7 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
 
       const objectUrl = URL.createObjectURL(droppedFile);
       const tempAudio = new Audio(objectUrl);
-      
+
       tempAudio.addEventListener('loadedmetadata', () => {
         const durationSecs = tempAudio.duration;
         if (!isNaN(durationSecs)) {
@@ -129,7 +129,11 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
 
     // Use standard XMLHttpRequest to support upload progress tracking
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/songs/upload', true);
+    xhr.open(
+      'POST',
+      'https://tuneflow-backend-0fv1.onrender.com/songs/upload',
+      true
+    );
 
     // Track upload progress
     xhr.upload.onprogress = (event) => {
