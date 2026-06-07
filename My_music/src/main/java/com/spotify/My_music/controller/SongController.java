@@ -46,13 +46,26 @@ public class SongController {
         Song song = songRepository.findById(id).orElseThrow();
 
         Path path = Paths.get(song.getFilePath());
-
         Resource resource = new UrlResource(path.toUri());
+
+        if (!resource.exists() || !resource.isReadable()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String contentType = "audio/mpeg"; // Default to MP3/MPEG
+        String filename = song.getFilePath().toLowerCase();
+        if (filename.endsWith(".wav")) {
+            contentType = "audio/wav";
+        } else if (filename.endsWith(".m4a") || filename.endsWith(".mp4")) {
+            contentType = "audio/mp4";
+        } else if (filename.endsWith(".ogg")) {
+            contentType = "audio/ogg";
+        }
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "inline; filename=\"" + resource.getFilename() + "\"")
-                .contentType(MediaType.parseMediaType("audio/mp4"))
+                .contentType(MediaType.parseMediaType(contentType))
                 .body(resource);
     }
 
@@ -65,6 +78,10 @@ public class SongController {
 
         Path path = Paths.get(song.getCoverImage());
         Resource resource = new UrlResource(path.toUri());
+
+        if (!resource.exists() || !resource.isReadable()) {
+            return ResponseEntity.notFound().build();
+        }
 
         String contentType = "image/jpeg";
         if (song.getCoverImage().toLowerCase().endsWith(".png")) {
