@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Play, Pause, Search, Clock, Disc, Music, Trash2, Heart, BarChart2, AudioWaveform } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function MainContent({ songs, activeTrack, isPlaying, onSelectTrack, onTogglePlay, onDeleteTrack, onToggleFavorite, activeView }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -152,7 +153,7 @@ export default function MainContent({ songs, activeTrack, isPlaying, onSelectTra
                       <div className="song-thumbnail" style={{ padding: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {song.coverImage ? (
                           <img
-                            src={`/songs/cover/${song.id}`}
+                            src={`${API_BASE_URL}/songs/cover/${song.id}`}
                             alt={song.title}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             onError={(e) => {

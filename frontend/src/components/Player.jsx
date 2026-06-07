@@ -12,6 +12,7 @@ import {
   Maximize2,
   Heart
 } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function Player({
   activeTrack,
@@ -71,7 +72,7 @@ export default function Player({
             <div className="current-track-art" style={{ padding: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {activeTrack.coverImage ? (
                 <img
-                  src={`/songs/cover/${activeTrack.id}`}
+                  src={`${API_BASE_URL}/songs/cover/${activeTrack.id}`}
                   alt={activeTrack.title}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => {

@@ -11,9 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.spotify.My_music.entity.Song;
 import com.spotify.My_music.repository.SongRepository;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
-
-@CrossOrigin(origins = "https://hareeshvar-tuneflow.netlify.app")
 @RestController
 @RequestMapping("/songs")
 public class UploadController {

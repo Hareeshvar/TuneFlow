@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { X, Upload, FileAudio, CheckCircle, AlertTriangle } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function UploadModal({ onClose, onUploadSuccess }) {
   const [title, setTitle] = useState('');
@@ -131,7 +132,7 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
     const xhr = new XMLHttpRequest();
     xhr.open(
       'POST',
-      'https://tuneflow-backend-0fv1.onrender.com/songs/upload',
+      `${API_BASE_URL}/songs/upload`,
       true
     );
 

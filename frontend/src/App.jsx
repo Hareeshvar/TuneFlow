@@ -4,6 +4,7 @@ import MainContent from './components/MainContent';
 import Player from './components/Player';
 import UploadModal from './components/UploadModal';
 import { Volume2, CheckCircle, AlertCircle } from 'lucide-react';
+import { API_BASE_URL } from './config';
 
 export default function App() {
   const [songs, setSongs] = useState([]);
@@ -38,7 +39,7 @@ export default function App() {
   // Fetch playlist from Spring Boot backend
   const fetchSongs = async () => {
     try {
-      const response = await fetch('/songs');
+      const response = await fetch(`${API_BASE_URL}/songs`);
       if (response.ok) {
         const data = await response.json();
         setSongs(data);
@@ -78,7 +79,7 @@ export default function App() {
       const currentTrack = activeTrackRef.current;
       if (currentTrack && currentTrack.id !== lastPlayedSongIdRef.current) {
         lastPlayedSongIdRef.current = currentTrack.id;
-        fetch(`/songs/${currentTrack.id}/play`, {
+        fetch(`${API_BASE_URL}/songs/${currentTrack.id}/play`, {
           method: 'POST',
         })
         .then(res => {
@@ -142,7 +143,7 @@ export default function App() {
         setActiveTrack(nextTrack);
         setIsPlaying(true);
         setCurrentTime(0);
-        audio.src = `/songs/play/${nextTrack.id}`;
+        audio.src = `${API_BASE_URL}/songs/play/${nextTrack.id}`;
         audio.load();
         audio.play().catch(err => {
           console.error("Audio playback error:", err);
@@ -187,7 +188,7 @@ export default function App() {
       setIsPlaying(true);
       setCurrentTime(0);
       
-      audioRef.current.src = `/songs/play/${track.id}`;
+      audioRef.current.src = `${API_BASE_URL}/songs/play/${track.id}`;
       audioRef.current.load();
       audioRef.current.play()
         .catch(err => {
@@ -330,7 +331,7 @@ export default function App() {
   const deleteSong = async (songId) => {
     if (window.confirm("Are you sure you want to delete this track?")) {
       try {
-        const response = await fetch(`/songs/${songId}`, {
+        const response = await fetch(`${API_BASE_URL}/songs/${songId}`, {
           method: 'DELETE',
         });
         if (response.ok) {
@@ -356,7 +357,7 @@ export default function App() {
 
   const toggleFavorite = async (songId) => {
     try {
-      const response = await fetch(`/songs/${songId}/favorite`, {
+      const response = await fetch(`${API_BASE_URL}/songs/${songId}/favorite`, {
         method: 'POST',
       });
       if (response.ok) {
