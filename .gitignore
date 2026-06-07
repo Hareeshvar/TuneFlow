@@ -1,0 +1,13 @@
+# User-specific / build directories
+node_modules/
+dist/
+target/
+.idea/
+.vscode/
+*.class
+*.jar
+*.war
+.env
+.env.*
+.vite/
+uploads/
