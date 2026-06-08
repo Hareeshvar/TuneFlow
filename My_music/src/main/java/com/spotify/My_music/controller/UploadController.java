@@ -13,16 +13,27 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.spotify.My_music.entity.Song;
+import com.spotify.My_music.entity.SongAudio;
+import com.spotify.My_music.entity.SongCover;
 import com.spotify.My_music.repository.SongRepository;
+import com.spotify.My_music.repository.SongAudioRepository;
+import com.spotify.My_music.repository.SongCoverRepository;
 
 @RestController
 @RequestMapping("/songs")
 public class UploadController {
 
     private final SongRepository songRepository;
+    private final SongAudioRepository songAudioRepository;
+    private final SongCoverRepository songCoverRepository;
 
-    public UploadController(SongRepository songRepository) {
+    public UploadController(
+            SongRepository songRepository,
+            SongAudioRepository songAudioRepository,
+            SongCoverRepository songCoverRepository) {
         this.songRepository = songRepository;
+        this.songAudioRepository = songAudioRepository;
+        this.songCoverRepository = songCoverRepository;
     }
 
     @PostMapping(
@@ -73,6 +84,17 @@ public class UploadController {
         }
 
         Song savedSong = songRepository.save(song);
+
+        // Save audio bytes to the database
+        SongAudio songAudio = new SongAudio(savedSong.getId(), file.getBytes());
+        songAudioRepository.save(songAudio);
+
+        // Save cover bytes to the database if a cover was uploaded
+        if (cover != null && !cover.isEmpty()) {
+            SongCover songCover = new SongCover(savedSong.getId(), cover.getBytes());
+            songCoverRepository.save(songCover);
+        }
+
         return ResponseEntity.ok(savedSong);
     }
 }

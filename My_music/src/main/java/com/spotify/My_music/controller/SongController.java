@@ -18,16 +18,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.spotify.My_music.entity.Song;
+import com.spotify.My_music.entity.SongAudio;
+import com.spotify.My_music.entity.SongCover;
 import com.spotify.My_music.repository.SongRepository;
+import com.spotify.My_music.repository.SongAudioRepository;
+import com.spotify.My_music.repository.SongCoverRepository;
 
 @RestController
 @RequestMapping("/songs")
 public class SongController {
 
     private final SongRepository songRepository;
+    private final SongAudioRepository songAudioRepository;
+    private final SongCoverRepository songCoverRepository;
 
-    public SongController(SongRepository songRepository) {
+    public SongController(
+            SongRepository songRepository,
+            SongAudioRepository songAudioRepository,
+            SongCoverRepository songCoverRepository) {
         this.songRepository = songRepository;
+        this.songAudioRepository = songAudioRepository;
+        this.songCoverRepository = songCoverRepository;
     }
 
     @GetMapping
@@ -45,20 +56,48 @@ public class SongController {
 
         Song song = songRepository.findById(id).orElseThrow();
 
-        Path path = Paths.get(song.getFilePath());
-        Resource resource = new UrlResource(path.toUri());
+        // 1. Try to load from database first
+        java.util.Optional<SongAudio> databaseAudio = songAudioRepository.findById(id);
+        Resource resource;
+        String filename;
 
-        if (!resource.exists() || !resource.isReadable()) {
-            return ResponseEntity.notFound().build();
+        if (databaseAudio.isPresent()) {
+            byte[] audioBytes = databaseAudio.get().getAudioData();
+            resource = new org.springframework.core.io.ByteArrayResource(audioBytes) {
+                @Override
+                public String getFilename() {
+                    if (song.getFilePath() != null) {
+                        try {
+                            return Paths.get(song.getFilePath()).getFileName().toString();
+                        } catch (Exception e) {
+                            // ignore and fallback
+                        }
+                    }
+                    return "track_" + id + ".m4a";
+                }
+            };
+            filename = song.getFilePath() != null ? song.getFilePath() : "track.m4a";
+        } else {
+            // 2. Fall back to filesystem
+            if (song.getFilePath() == null) {
+                return ResponseEntity.notFound().build();
+            }
+            Path path = Paths.get(song.getFilePath());
+            resource = new UrlResource(path.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+            filename = song.getFilePath();
         }
 
         String contentType = "audio/mpeg"; // Default to MP3/MPEG
-        String filename = song.getFilePath().toLowerCase();
-        if (filename.endsWith(".wav")) {
+        String filenameLower = filename.toLowerCase();
+        if (filenameLower.endsWith(".wav")) {
             contentType = "audio/wav";
-        } else if (filename.endsWith(".m4a") || filename.endsWith(".mp4")) {
+        } else if (filenameLower.endsWith(".m4a") || filenameLower.endsWith(".mp4")) {
             contentType = "audio/mp4";
-        } else if (filename.endsWith(".ogg")) {
+        } else if (filenameLower.endsWith(".ogg")) {
             contentType = "audio/ogg";
         }
 
@@ -72,21 +111,49 @@ public class SongController {
     @GetMapping("/cover/{id}")
     public ResponseEntity<Resource> getCover(@PathVariable Long id) throws Exception {
         Song song = songRepository.findById(id).orElseThrow();
-        if (song.getCoverImage() == null || song.getCoverImage().isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
 
-        Path path = Paths.get(song.getCoverImage());
-        Resource resource = new UrlResource(path.toUri());
+        // 1. Try to load from database first
+        java.util.Optional<SongCover> databaseCover = songCoverRepository.findById(id);
+        Resource resource;
+        String filename;
 
-        if (!resource.exists() || !resource.isReadable()) {
-            return ResponseEntity.notFound().build();
+        if (databaseCover.isPresent()) {
+            byte[] coverBytes = databaseCover.get().getCoverData();
+            resource = new org.springframework.core.io.ByteArrayResource(coverBytes) {
+                @Override
+                public String getFilename() {
+                    if (song.getCoverImage() != null) {
+                        try {
+                            return Paths.get(song.getCoverImage()).getFileName().toString();
+                        } catch (Exception e) {
+                            // ignore and fallback
+                        }
+                    }
+                    return "cover_" + id + ".jpg";
+                }
+            };
+            filename = song.getCoverImage() != null ? song.getCoverImage() : "cover.jpg";
+        } else {
+            // 2. Fall back to filesystem
+            if (song.getCoverImage() == null || song.getCoverImage().isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Path path = Paths.get(song.getCoverImage());
+            Resource resourceFileSystem = new UrlResource(path.toUri());
+
+            if (!resourceFileSystem.exists() || !resourceFileSystem.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+            resource = resourceFileSystem;
+            filename = song.getCoverImage();
         }
 
         String contentType = "image/jpeg";
-        if (song.getCoverImage().toLowerCase().endsWith(".png")) {
+        String filenameLower = filename.toLowerCase();
+        if (filenameLower.endsWith(".png")) {
             contentType = "image/png";
-        } else if (song.getCoverImage().toLowerCase().endsWith(".gif")) {
+        } else if (filenameLower.endsWith(".gif")) {
             contentType = "image/gif";
         }
 
@@ -114,6 +181,16 @@ public class SongController {
                 }
             } catch (Exception e) {
                 System.err.println("Failed to delete files on disk: " + e.getMessage());
+            }
+            try {
+                songAudioRepository.deleteById(id);
+            } catch (Exception e) {
+                System.err.println("Failed to delete audio from DB: " + e.getMessage());
+            }
+            try {
+                songCoverRepository.deleteById(id);
+            } catch (Exception e) {
+                System.err.println("Failed to delete cover from DB: " + e.getMessage());
             }
             songRepository.delete(song);
         }
