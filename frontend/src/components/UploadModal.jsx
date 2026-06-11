@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import { X, Upload, FileAudio, CheckCircle, AlertTriangle } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import { AuthContext } from '../context/AuthContext';
 
 export default function UploadModal({ onClose, onUploadSuccess }) {
+  const { token } = useContext(AuthContext);
   const [title, setTitle] = useState('');
   const [artist, setArtist] = useState('');
   const [file, setFile] = useState(null);
@@ -135,6 +137,7 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
       `${API_BASE_URL}/songs/upload`,
       true
     );
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
 
     // Track upload progress
     xhr.upload.onprogress = (event) => {

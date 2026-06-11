@@ -1,6 +1,9 @@
-import { Home, Search, Library, Plus, Music, Volume2, Heart, BarChart2, Headphones, X } from 'lucide-react';
+import React, { useContext } from 'react';
+import { Home, Search, Library, Plus, Music, Volume2, Heart, BarChart2, Headphones, X, LogIn } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
 
-export default function Sidebar({ songs, activeTrack, isPlaying, onSelectTrack, onOpenUpload, activeView, onViewChange, isOpen, onClose }) {
+export default function Sidebar({ songs, activeTrack, isPlaying, onSelectTrack, onOpenUpload, onOpenLogin, activeView, onViewChange, isOpen, onClose }) {
+  const { isAdmin, logout, username } = useContext(AuthContext);
   return (
     <>
       {isOpen && <div className="sidebar-overlay" onClick={onClose}></div>}
@@ -36,6 +39,22 @@ export default function Sidebar({ songs, activeTrack, isPlaying, onSelectTrack, 
           <BarChart2 size={20} style={{ color: activeView === 'most_played' ? 'var(--tuneflow-green)' : 'inherit' }} />
           <span>Most Played</span>
         </div>
+        {isAdmin() ? (
+          <>
+            <div className="sidebar-link admin-user-info" style={{ color: 'var(--tuneflow-green)', cursor: 'default' }}>
+              <span>👑 {username}</span>
+            </div>
+            <div className="sidebar-link logout-btn" onClick={() => { logout(); if(onClose) onClose(); }} style={{ color: '#ef5350' }}>
+              <X size={20} />
+              <span>Logout</span>
+            </div>
+          </>
+        ) : (
+          <div className="sidebar-link login-btn" onClick={() => { onOpenLogin(); if(onClose) onClose(); }}>
+            <LogIn size={20} />
+            <span>Admin Login</span>
+          </div>
+        )}
       </div>
 
       {/* Music Library Panel */}
@@ -45,10 +64,12 @@ export default function Sidebar({ songs, activeTrack, isPlaying, onSelectTrack, 
             <Library size={20} />
             <span>Your Library</span>
           </div>
-          <button className="upload-btn" onClick={onOpenUpload} title="Upload a new song">
-            <Plus size={16} />
-            <span>Upload</span>
-          </button>
+          {isAdmin() && (
+            <button className="upload-btn" onClick={onOpenUpload} title="Upload a new song">
+              <Plus size={16} />
+              <span>Upload</span>
+            </button>
+          )}
         </div>
 
         <div className="library-list">

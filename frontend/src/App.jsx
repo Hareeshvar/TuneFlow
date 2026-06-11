@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import Player from './components/Player';
 import UploadModal from './components/UploadModal';
-import { Volume2, CheckCircle, AlertCircle, Menu, Headphones, Plus } from 'lucide-react';
+import LoginModal from './components/LoginModal';
+import { Volume2, CheckCircle, AlertCircle, Menu, Headphones, Plus, LogIn } from 'lucide-react';
 import { API_BASE_URL } from './config';
+import { AuthContext } from './context/AuthContext';
 
 export default function App() {
   const [songs, setSongs] = useState([]);
@@ -22,7 +24,10 @@ export default function App() {
   // Modal & Notification states
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [notification, setNotification] = useState(null);
+
+  const { token, isAdmin } = useContext(AuthContext);
 
   const audioRef = useRef(new Audio());
 
@@ -334,6 +339,9 @@ export default function App() {
       try {
         const response = await fetch(`${API_BASE_URL}/songs/${songId}`, {
           method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         });
         if (response.ok) {
           showNotification('Track deleted successfully!');
@@ -395,9 +403,15 @@ export default function App() {
           <Headphones size={24} style={{ color: 'var(--tuneflow-green, #1ed760)' }} />
           <span>TuneFlow</span>
         </div>
-        <button className="mobile-upload-btn" onClick={() => setIsUploadOpen(true)} aria-label="Upload song">
-          <Plus size={20} />
-        </button>
+        {isAdmin() ? (
+          <button className="mobile-upload-btn" onClick={() => setIsUploadOpen(true)} aria-label="Upload song">
+            <Plus size={20} />
+          </button>
+        ) : (
+          <button className="menu-toggle-btn" onClick={() => setIsLoginOpen(true)} aria-label="Admin Login">
+            <LogIn size={20} />
+          </button>
+        )}
       </header>
 
       <div className="app-container">
@@ -408,6 +422,7 @@ export default function App() {
           isPlaying={isPlaying}
           onSelectTrack={selectTrack}
           onOpenUpload={() => setIsUploadOpen(true)}
+          onOpenLogin={() => setIsLoginOpen(true)}
           activeView={activeView}
           onViewChange={setActiveView}
           isOpen={isSidebarOpen}
@@ -453,6 +468,13 @@ export default function App() {
         <UploadModal
           onClose={() => setIsUploadOpen(false)}
           onUploadSuccess={handleUploadSuccess}
+        />
+      )}
+
+      {/* Floating Login Modal */}
+      {isLoginOpen && (
+        <LoginModal
+          onClose={() => setIsLoginOpen(false)}
         />
       )}
 

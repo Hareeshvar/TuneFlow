@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Play, Pause, Search, Clock, Disc, Music, Trash2, Heart, BarChart2, AudioWaveform } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import { AuthContext } from '../context/AuthContext';
 
 export default function MainContent({ songs, activeTrack, isPlaying, onSelectTrack, onTogglePlay, onDeleteTrack, onToggleFavorite, activeView }) {
+  const { isAdmin } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter songs based on search query (case-insensitive)
@@ -212,17 +214,19 @@ export default function MainContent({ songs, activeTrack, isPlaying, onSelectTra
                       >
                         {isActive && isPlaying ? <Pause size={16} /> : <Play size={16} />}
                       </button>
-                      <button
-                        className="row-play-btn delete-btn-hover"
-                        style={{ color: 'var(--tuneflow-light-gray)' }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteTrack(song.id);
-                        }}
-                        title="Delete track"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {isAdmin() && (
+                        <button
+                          className="row-play-btn delete-btn-hover"
+                          style={{ color: 'var(--tuneflow-light-gray)' }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteTrack(song.id);
+                          }}
+                          title="Delete track"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
