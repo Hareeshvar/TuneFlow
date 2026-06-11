@@ -1,13 +1,26 @@
-import { Home, Search, Library, Plus, Music, Volume2, Heart, BarChart2, Headphones } from 'lucide-react';
+import { Home, Search, Library, Plus, Music, Volume2, Heart, BarChart2, Headphones, X } from 'lucide-react';
 
-export default function Sidebar({ songs, activeTrack, isPlaying, onSelectTrack, onOpenUpload, activeView, onViewChange }) {
+export default function Sidebar({ songs, activeTrack, isPlaying, onSelectTrack, onOpenUpload, activeView, onViewChange, isOpen, onClose }) {
   return (
-    <aside className="sidebar">
-      {/* Branding Logo & Title */}
-      <div className="sidebar-card" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px' }}>
-        <Headphones size={28} style={{ color: 'var(--tuneflow-green, #1ed760)' }} />
-        <span style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.5px', color: '#ffffff' }}>TuneFlow</span>
-      </div>
+    <>
+      {isOpen && <div className="sidebar-overlay" onClick={onClose}></div>}
+      <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+        {/* Mobile Header with Close Button */}
+        <div className="sidebar-mobile-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Headphones size={28} style={{ color: 'var(--tuneflow-green, #1ed760)' }} />
+            <span style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.5px', color: '#ffffff' }}>TuneFlow</span>
+          </div>
+          <button className="sidebar-close-btn" onClick={onClose} aria-label="Close sidebar">
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Branding Logo & Title */}
+        <div className="sidebar-card sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px' }}>
+          <Headphones size={28} style={{ color: 'var(--tuneflow-green, #1ed760)' }} />
+          <span style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.5px', color: '#ffffff' }}>TuneFlow</span>
+        </div>
 
       {/* Home / Liked Songs / Most Played Navigation */}
       <div className="sidebar-card sidebar-nav">
@@ -72,5 +85,6 @@ export default function Sidebar({ songs, activeTrack, isPlaying, onSelectTrack, 
         </div>
       </div>
     </aside>
+    </>
   );
 }

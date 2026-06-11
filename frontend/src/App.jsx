@@ -3,7 +3,7 @@ import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import Player from './components/Player';
 import UploadModal from './components/UploadModal';
-import { Volume2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Volume2, CheckCircle, AlertCircle, Menu, Headphones, Plus } from 'lucide-react';
 import { API_BASE_URL } from './config';
 
 export default function App() {
@@ -21,6 +21,7 @@ export default function App() {
   
   // Modal & Notification states
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notification, setNotification] = useState(null);
 
   const audioRef = useRef(new Audio());
@@ -385,6 +386,20 @@ export default function App() {
 
   return (
     <>
+      {/* Mobile top navigation bar */}
+      <header className="mobile-top-bar">
+        <button className="menu-toggle-btn" onClick={() => setIsSidebarOpen(true)} aria-label="Open menu">
+          <Menu size={24} />
+        </button>
+        <div className="mobile-logo">
+          <Headphones size={24} style={{ color: 'var(--tuneflow-green, #1ed760)' }} />
+          <span>TuneFlow</span>
+        </div>
+        <button className="mobile-upload-btn" onClick={() => setIsUploadOpen(true)} aria-label="Upload song">
+          <Plus size={20} />
+        </button>
+      </header>
+
       <div className="app-container">
         {/* Left Sidebar */}
         <Sidebar
@@ -395,6 +410,8 @@ export default function App() {
           onOpenUpload={() => setIsUploadOpen(true)}
           activeView={activeView}
           onViewChange={setActiveView}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
 
         {/* Central Playlist Panel */}

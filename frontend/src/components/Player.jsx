@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Play,
   Pause,
@@ -35,6 +35,7 @@ export default function Player({
 }) {
   const progressBarRef = useRef(null);
   const volumeBarRef = useRef(null);
+  const [showMobileVolume, setShowMobileVolume] = useState(false);
 
   // Format seconds to MM:SS
   const formatTime = (secs) => {
@@ -52,12 +53,38 @@ export default function Player({
     onSeek(percentage * duration);
   };
 
+  const handleProgressTouch = (e) => {
+    if (!duration || !progressBarRef.current) return;
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const touch = e.touches[0];
+    const clickX = touch.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, clickX / rect.width));
+    onSeek(percentage * duration);
+  };
+
   const handleVolumeClick = (e) => {
     if (!volumeBarRef.current) return;
     const rect = volumeBarRef.current.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const percentage = Math.max(0, Math.min(1, clickX / rect.width));
     onVolumeChange(percentage);
+  };
+
+  const handleVolumeTouch = (e) => {
+    if (!volumeBarRef.current) return;
+    const rect = volumeBarRef.current.getBoundingClientRect();
+    const touch = e.touches[0];
+    const clickX = touch.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, clickX / rect.width));
+    onVolumeChange(percentage);
+  };
+
+  const handleVolumeBtnClick = () => {
+    if (window.innerWidth <= 640) {
+      setShowMobileVolume(!showMobileVolume);
+    } else {
+      onToggleMute();
+    }
   };
 
   const progressPercent = duration ? (currentTime / duration) * 100 : 0;
@@ -150,6 +177,8 @@ export default function Player({
             className="progress-bar-wrapper"
             ref={progressBarRef}
             onClick={handleProgressClick}
+            onTouchStart={handleProgressTouch}
+            onTouchMove={handleProgressTouch}
           >
             <div className="progress-fill" style={{ width: `${progressPercent}%` }}></div>
             <div className="progress-handle" style={{ left: `${progressPercent}%` }}></div>
@@ -161,13 +190,15 @@ export default function Player({
       {/* Right Area: Volume Controls */}
       <div className="player-right">
         <div className="volume-container">
-          <button className="control-btn" onClick={onToggleMute} title={isMuted ? 'Unmute' : 'Mute'}>
+          <button className="control-btn" onClick={handleVolumeBtnClick} title={isMuted ? 'Unmute' : 'Mute'}>
             {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
           </button>
           <div
-            className="volume-slider-wrapper"
+            className={`volume-slider-wrapper ${showMobileVolume ? 'mobile-visible' : ''}`}
             ref={volumeBarRef}
             onClick={handleVolumeClick}
+            onTouchStart={handleVolumeTouch}
+            onTouchMove={handleVolumeTouch}
           >
             <div className="volume-fill" style={{ width: `${volumePercent}%` }}></div>
           </div>
