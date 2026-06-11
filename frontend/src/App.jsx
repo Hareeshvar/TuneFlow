@@ -3,7 +3,7 @@ import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import Player from './components/Player';
 import UploadModal from './components/UploadModal';
-import LoginModal from './components/LoginModal';
+import LoginPage from './components/LoginPage';
 import { Volume2, CheckCircle, AlertCircle, Menu, Headphones, Plus, LogIn } from 'lucide-react';
 import { API_BASE_URL } from './config';
 import { AuthContext } from './context/AuthContext';
@@ -24,8 +24,20 @@ export default function App() {
   // Modal & Notification states
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [currentRoute, setCurrentRoute] = useState(window.location.hash === '#/login' ? 'login' : 'app');
   const [notification, setNotification] = useState(null);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#/login') {
+        setCurrentRoute('login');
+      } else {
+        setCurrentRoute('app');
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const { token, isAdmin } = useContext(AuthContext);
 
@@ -408,73 +420,72 @@ export default function App() {
             <Plus size={20} />
           </button>
         ) : (
-          <button className="menu-toggle-btn" onClick={() => setIsLoginOpen(true)} aria-label="Admin Login">
+          <button className="menu-toggle-btn" onClick={() => { window.location.hash = '#/login'; }} aria-label="Admin Login">
             <LogIn size={20} />
           </button>
         )}
       </header>
 
-      <div className="app-container">
-        {/* Left Sidebar */}
-        <Sidebar
-          songs={songs}
-          activeTrack={activeTrack}
-          isPlaying={isPlaying}
-          onSelectTrack={selectTrack}
-          onOpenUpload={() => setIsUploadOpen(true)}
-          onOpenLogin={() => setIsLoginOpen(true)}
-          activeView={activeView}
-          onViewChange={setActiveView}
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-        />
+      {currentRoute === 'login' ? (
+        <LoginPage />
+      ) : (
+        <div className="app-container">
+          {/* Left Sidebar */}
+          <Sidebar
+            songs={songs}
+            activeTrack={activeTrack}
+            isPlaying={isPlaying}
+            onSelectTrack={selectTrack}
+            onOpenUpload={() => setIsUploadOpen(true)}
+            onOpenLogin={() => { window.location.hash = '#/login'; }}
+            activeView={activeView}
+            onViewChange={setActiveView}
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+          />
 
-        {/* Central Playlist Panel */}
-        <MainContent
-          songs={displayedSongs}
-          activeTrack={activeTrack}
-          isPlaying={isPlaying}
-          onSelectTrack={selectTrack}
-          onTogglePlay={togglePlay}
-          onDeleteTrack={deleteSong}
-          onToggleFavorite={toggleFavorite}
-          activeView={activeView}
-        />
-      </div>
+          {/* Central Playlist Panel */}
+          <MainContent
+            songs={displayedSongs}
+            activeTrack={activeTrack}
+            isPlaying={isPlaying}
+            onSelectTrack={selectTrack}
+            onTogglePlay={togglePlay}
+            onDeleteTrack={deleteSong}
+            onToggleFavorite={toggleFavorite}
+            activeView={activeView}
+          />
+        </div>
+      )}
 
       {/* Sticky tuneflow-like bottom player */}
-      <Player
-        activeTrack={activeTrack}
-        isPlaying={isPlaying}
-        currentTime={currentTime}
-        duration={duration}
-        volume={volume}
-        isMuted={isMuted}
-        shuffleMode={shuffleMode}
-        repeatMode={repeatMode}
-        onTogglePlay={togglePlay}
-        onSkipNext={() => playNextTrack(false)}
-        onSkipPrevious={playPreviousTrack}
-        onSeek={seekTo}
-        onVolumeChange={changeVolume}
-        onToggleMute={toggleMute}
-        onToggleShuffle={toggleShuffle}
-        onToggleRepeat={toggleRepeat}
-        onToggleFavorite={toggleFavorite}
-      />
-
-      {/* Floating Upload Modal */}
-      {isUploadOpen && (
-        <UploadModal
-          onClose={() => setIsUploadOpen(false)}
-          onUploadSuccess={handleUploadSuccess}
+      {currentRoute !== 'login' && (
+        <Player
+          activeTrack={activeTrack}
+          isPlaying={isPlaying}
+          currentTime={currentTime}
+          duration={duration}
+          volume={volume}
+          isMuted={isMuted}
+          shuffleMode={shuffleMode}
+          repeatMode={repeatMode}
+          onTogglePlay={togglePlay}
+          onSkipNext={() => playNextTrack(false)}
+          onSkipPrevious={playPreviousTrack}
+          onSeek={seekTo}
+          onVolumeChange={changeVolume}
+          onToggleMute={toggleMute}
+          onToggleShuffle={toggleShuffle}
+          onToggleRepeat={toggleRepeat}
+          onToggleFavorite={toggleFavorite}
         />
       )}
 
-      {/* Floating Login Modal */}
-      {isLoginOpen && (
-        <LoginModal
-          onClose={() => setIsLoginOpen(false)}
+      {/* Floating Upload Modal */}
+      {currentRoute !== 'login' && isUploadOpen && (
+        <UploadModal
+          onClose={() => setIsUploadOpen(false)}
+          onUploadSuccess={handleUploadSuccess}
         />
       )}
 
