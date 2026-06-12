@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import com.spotify.My_music.entity.User;
 import com.spotify.My_music.repository.UserRepository;
 
+import java.util.Optional;
+
 @Component
 public class AdminUserSeeder implements CommandLineRunner {
 
@@ -24,7 +26,8 @@ public class AdminUserSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (userRepository.findByUsername("hareeshvar").isEmpty()) {
+        Optional<User> adminOpt = userRepository.findByUsername("hareeshvar");
+        if (adminOpt.isEmpty()) {
             System.out.println("Seeding default admin user: hareeshvar");
             User admin = new User();
             admin.setUsername("hareeshvar");
@@ -33,7 +36,11 @@ public class AdminUserSeeder implements CommandLineRunner {
             userRepository.save(admin);
             System.out.println("Default admin user hareeshvar seeded successfully.");
         } else {
-            System.out.println("Admin user hareeshvar already exists. Skipping seeding.");
+            System.out.println("Admin user hareeshvar already exists. Updating password to match current environment configuration.");
+            User admin = adminOpt.get();
+            admin.setPassword(passwordEncoder.encode(adminPassword));
+            userRepository.save(admin);
+            System.out.println("Admin user hareeshvar password updated successfully.");
         }
     }
 }
